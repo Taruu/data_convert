@@ -16,15 +16,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
+#то же саммое что и в main
 Base = declarative_base()
-
-
-engine = create_engine('sqlite:////home/taruu/Рабочий стол/meteor/metiors', echo=False)
-
+engine = create_engine('sqlite:////home/taruu/Yandex.Disk/Данные Спутник/out_all_data', echo=False)
 Session = sessionmaker(bind=engine)
 session = Session()
 
-floader = "elif"
 
 class ticks(Base):
     __tablename__ = 'frame'
@@ -40,12 +37,17 @@ class ticks(Base):
         self.end = end
         self.data = data
 
-i=1
-test = session.query(ticks).get(i)
-print(test)
-input()
-while test:
-    test = session.query(ticks).get(i)
-    print(test.name,i)
-    i+=1
 
+#Костыль века 3000 ой май гад
+i=1
+test = True
+while test:
+    try:
+        test = session.query(ticks).get(i)
+        print(test.name,i)
+        #вывод и получения данных
+        ##print(pickle.loads(test.data))
+        i+=1
+    except:
+        test = None
+        print('Кол-во элементов:',i)
