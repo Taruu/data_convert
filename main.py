@@ -62,6 +62,7 @@ class ticks(Base):
 
 #Загружаем и считаваем данные
 def load_file(filename):
+
     frames_x16 = [] # массив по 16*16 *256
     lines = []
     with open(filename) as inp:
