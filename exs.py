@@ -20,7 +20,6 @@ import torch.optim as optim
 
 
 database = "/home/taruu/data_satellite/database/met_AURORA"
-txt_path = "/home/taruu/data_satellite/txt/met_AURORA"
 
 
 Base = declarative_base()
