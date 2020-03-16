@@ -89,6 +89,10 @@ class hv_line(Base):
     hv30 = Column(Integer, index=True)
     hv31 = Column(Integer, index=True)
     hv32 = Column(Integer, index=True)
+
+    list_hv = [hv1,hv2,hv3,hv4,hv5,hv6,hv7,hv8,hv9,hv10,hv11,hv12,hv13,hv14,hv15,hv16,hv17,hv18,hv19,hv20,hv21,hv22,hv23,hv24,hv25,hv26,hv27,hv28,hv29,hv30,hv31,hv32]
+
+
     def __init__(self, id, list_in):
         self.id = id
         self.hv1 = list_in[0]
@@ -125,120 +129,16 @@ class hv_line(Base):
         self.hv32 = list_in[31]
 
 
-def load_file_xz(filename):
-    start = filename.split("-")[1]
-    end = filename.split("-")[2]
-    startdatatime = datetime.strptime(start, "%y%m%d_%H%M%S").timestamp()
-    enddatatime = datetime.strptime(end, "%y%m%d_%H%M%S").timestamp()
-    frames_x16 = []  # массив по 16*16 *256
-    lines = []
-    with lzma.open(filename,"rt") as inp:
-        for line in list(islice(inp, 2560)):
-            l = [x for x in (' '.join(line.split())).split(' ')]
-            lines.append(l)
-
-    with lzma.open(filename,"rt") as inp:
-        list_hv = next(islice(inp, 256, 257)).split()
-        list_hv.pop(0)
-        list_hv.pop(0)
-
-    with lzma.open(filename,"rt") as inp:
-        LLA_coordinates = next(islice(inp, 268, 269)).split()
-        LLA_coordinates.pop(0)
-        LLA_coordinates.pop(0)
-
-    for j in range(2, 258):
-        frame = []
-        for k in range(16):
-            row = []
-            for l in range(16):
-                row.append(int(lines[16 * k + l][j]))
-            frame.append(row)
-        frames_x16.append(frame)
-
-    return {"frames_x16": frames_x16, "lsit_hv": list_hv, "LLA_coordinates": LLA_coordinates, "start": startdatatime,
-            "end": enddatatime}
-
-def load_file_txt(filename):
-    start = filename.split("-")[1]
-    end = filename.split("-")[2]
-    startdatatime = datetime.strptime(start, "%y%m%d_%H%M%S").timestamp()
-    enddatatime = datetime.strptime(end, "%y%m%d_%H%M%S").timestamp()
-    frames_x16 = [] # массив по 16*16 *256
-    lines = []
-    with open(filename) as inp:
-        for line in list(islice(inp, 2560)):
-            l = [x for x in (' '.join(line.split())).split(' ')]
-            lines.append(l)
+def hv_get_list(id):
+    hv_now = session.query(hv_line).get(id)
+    return [hv_now.hv1,hv_now.hv2,hv_now.hv3,hv_now.hv4,hv_now.hv5,hv_now.hv6,hv_now.hv7,hv_now.hv8,hv_now.hv9,hv_now.hv10,hv_now.hv11,hv_now.hv12,hv_now.hv13,hv_now.hv14,hv_now.hv15,hv_now.hv16,hv_now.hv17,hv_now.hv18,hv_now.hv19,hv_now.hv20,hv_now.hv21,hv_now.hv22,hv_now.hv23,hv_now.hv24,hv_now.hv25,hv_now.hv26,hv_now.hv27,hv_now.hv28,hv_now.hv29,hv_now.hv30,hv_now.hv31,hv_now.hv32]
 
 
-    with open(filename) as inp:
-        list_hv = next(islice(inp, 256, 257)).split()
-        list_hv.pop(0)
-        list_hv.pop(0)
 
-    with open(filename) as inp:
-        LLA_coordinates = next(islice(inp, 268, 269)).split()
-        LLA_coordinates.pop(0)
-        LLA_coordinates.pop(0)
+#Подсчитаем кол во
+print(session.query(frame).count())
 
-
-    for j in range(2, 258):
-        frame = []
-        for k in range(16):
-            row = []
-            for l in range(16):
-                row.append(int(lines[16 * k + l][j]))
-            frame.append(row)
-        frames_x16.append(frame)
-    #
-    # frames_x256 = [] #16*256 *16 0_o
-    # for row in range(16):
-    #     col_list = []
-    #     for col in range(256):
-    #         col_list.append(frames_x16[col][0])
-    #     frames_x256.append(col_list)
-
-    max([np.max(a) for a in frames_x16])
-    return {"frames_x16":frames_x16,"lsit_hv":list_hv,"LLA_coordinates":LLA_coordinates,"start":startdatatime,"end":enddatatime}
-
-def insert_data(id,filename,data_dict):
-    list_all_data = []
-    list_all_data.append(frame(id,filename.split("/")[-1],data_dict["start"],data_dict["end"],data_dict["LLA_coordinates"][0],data_dict["LLA_coordinates"][1],data_dict["LLA_coordinates"][2]))
-    list_all_data.append(data_table(id,pickle.dumps(torch.Tensor(data_dict["frames_x16"]))))
-    list_all_data.append(hv_line(id,data_dict["lsit_hv"]))
-    return list_all_data
-
-
-add_list = []
-print(database)
-print(txt_path)
-list_files = glob.glob(txt_path+"/*.txt")
-list_xz = glob.glob(txt_path+"/*/*")
-if len(list_xz) != 0:
-    list_files.extend(list_xz)
-
-def take_convert(id,filename):
-    if filename.split(".")[-1] == "xz":
-        data_all = load_file_xz(file)
-    else:
-        data_all = load_file_txt(file)
-    return insert_data(id,file,data_all)
-
-
-for id,file in enumerate(list_files):
-    print(id)
-    if (id % 100 == 0) and (id != 0):
-        #print(id, len(add_list),add_list)
-        session.add_all(add_list)
-        session.commit()
-        add_list.clear()
-        add_list.extend(take_convert(id, file))
-
-    else:
-        add_list.extend(take_convert(id,file))
-else:
-    print(id, len(add_list), add_list)
-    session.add_all(add_list)
-    session.commit()
-
+for id in range(session.query(frame).count()):
+    print(id,session.query(frame).get(id).name)
+    print(hv_get_list(id))
+    print(pickle.loads(session.query(data_table).get(id).data))
