@@ -135,7 +135,7 @@ def hv_get_list(id):
 
 
 
-#Подсчитаем кол во
+#Подсчитаем кол воd
 print(session.query(frame).count())
 
 for id in range(session.query(frame).count()):
