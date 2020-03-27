@@ -19,8 +19,8 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 
-database = "/home/taruu/data_satellite/database/met_AURORA"
-txt_path = "/home/taruu/data_satellite/txt/met_AURORA"
+database = "/home/taruu/data_satellite/database/ofther"
+txt_path = "/home/taruu/data_satellite/txt/ofther"
 
 
 Base = declarative_base()
@@ -227,9 +227,11 @@ def take_convert(id,filename):
 
 
 for id,file in enumerate(list_files):
-    print(id)
+    #print(id)
+    if id < session.query(frame).count():
+        continue
     if (id % 100 == 0) and (id != 0):
-        #print(id, len(add_list),add_list)
+        print(id, len(add_list),add_list)
         session.add_all(add_list)
         session.commit()
         add_list.clear()
